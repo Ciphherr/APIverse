@@ -13,7 +13,7 @@ const methodColors = {
   head: "bg-gradient-to-r from-indigo-400 to-blue-500 text-black",
 };
 
-export default function CustomLayout({ spec , apiId }) {
+export default function CustomLayout({ spec , apiId, embedded = false}) {
 
 
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
@@ -136,7 +136,10 @@ function getSchemaByRef(ref, spec) {
   const endpoints = Object.entries(spec.paths);
 
   return (
-    <div className="bg-black text-white min-h-screen flex relative overflow-hidden">
+    <div className={`bg-black text-white ${embedded ? "" : "min-h-screen"} flex relative overflow-hidden`}>
+      {!embedded && (
+        <aside className="..."> {/* existing sidebar */} </aside>
+      )}
       {/* Dynamic Background */}
       <div className="fixed inset-0 z-0">
         <div 
@@ -214,6 +217,13 @@ function getSchemaByRef(ref, spec) {
 
       {/* Main Content */}
       <main className="relative z-10 flex-1 p-8 overflow-y-auto">
+        {/* If embedded, maybe show a small header bar */}
+        {embedded ? (
+          <div className="mb-4 flex items-center justify-between">
+            <div className="font-bold text-lg">{spec.info?.title || "API Docs"}</div>
+            <div className="text-sm text-white/60">Embedded view</div>
+          </div>
+        ) : null}
         {selectedEndpoint ? (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* Endpoint Header */}

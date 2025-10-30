@@ -13,6 +13,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use((req, res, next) => {
+  if (req.path.startsWith("/embed")) {
+    // Allow embedding by any origin (use tighter policy in production)
+    res.setHeader("X-Frame-Options", "ALLOWALL"); // or remove this header
+    res.setHeader("Content-Security-Policy", "frame-ancestors *");
+  }
+  return next();
+});
+
 connectDB();
 
 // Routes

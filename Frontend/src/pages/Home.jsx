@@ -111,6 +111,73 @@ export default function Home() {
           {spec && !loading && (
             <div className="bg-gray-900 rounded-xl shadow-lg p-4">
               <CustomLayout spec={spec}  apiId = {apiId} />
+{/* Embed Code Box */}
+<div className="bg-black/40 border border-emerald-500/40 rounded-xl p-4 mt-6 relative">
+  <h2 className="text-xl font-semibold text-emerald-400 mb-2">Embed This API Doc</h2>
+  <p className="text-sm text-gray-400 mb-3">
+    Copy and paste this iframe code into your website to embed the generated documentation.
+  </p>
+
+  <textarea
+    id="embedCode"
+    className="w-full bg-gray-800 text-emerald-300 text-sm font-mono rounded-lg p-3 resize-none border border-emerald-700/40"
+    rows="3"
+    readOnly
+    value={`<iframe src="http://localhost:3000/embed/${apiId}" width="100%" height="800" style="border:none;"></iframe>`}
+  ></textarea>
+
+  <button
+    className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm transition"
+    onClick={async (e) => {
+      e.preventDefault();
+      const embedCode = document.getElementById("embedCode").value;
+
+      try {
+        // ✅ Use Clipboard API if available
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(embedCode);
+        } else {
+          // ✅ Fallback for HTTP/localfile
+          const textarea = document.createElement("textarea");
+          textarea.value = embedCode;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          textarea.remove();
+        }
+
+        // ✅ Show success message non-blocking
+        const toast = document.createElement("div");
+        toast.textContent = "✅ Embed code copied!";
+        toast.className =
+          "fixed bottom-5 right-5 bg-emerald-500 text-black px-4 py-2 rounded-lg shadow-lg text-sm animate-fade";
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+      } catch (err) {
+        console.error("Copy failed:", err);
+        const toast = document.createElement("div");
+        toast.textContent = "❌ Failed to copy. Please copy manually.";
+        toast.className =
+          "fixed bottom-5 right-5 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm animate-fade";
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+      }
+    }}
+  >
+    Copy Embed Code
+  </button>
+
+  <style>{`
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade {
+      animation: fade 0.3s ease-in-out;
+    }
+  `}</style>
+</div>
+
             </div>
           )}
 

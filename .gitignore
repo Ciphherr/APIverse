@@ -19,6 +19,7 @@ sdks
 !.vscode/extensions.json
 .idea
 .env
+test.html
 .DS_Store
 *.suo
 *.ntvs*
