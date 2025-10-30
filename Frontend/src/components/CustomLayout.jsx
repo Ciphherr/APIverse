@@ -41,7 +41,7 @@ export default function CustomLayout({ spec , apiId, embedded = false}) {
     return;
   }
 
-  const language = "python-flask";
+  const language = "javascript";
 
   try {
     // 1️⃣ Generate SDK
@@ -63,49 +63,64 @@ export default function CustomLayout({ spec , apiId, embedded = false}) {
   }
 };
 
-const handleTryIt = async () => {
+const handleTryIt = async (event) => {
+  if (event) {
+    event.preventDefault(); 
+  }
   if (!selectedEndpoint || !spec) return;
 
   const { path, method } = selectedEndpoint;
+  const lowerMethod = method.toLowerCase(); // Use this for checks
 
-  // 1️⃣ Get base URL from spec
-  // Swagger 2.0 -> spec.host + spec.basePath
-  // OpenAPI 3.0+ -> spec.servers[0].url
-  let baseUrl = "http://localhost:3000"; // fallback
+  // 1️⃣ Get base URL from spec (Your logic here is mostly fine)
+  let baseUrl = "https://postman-echo.com"; 
   if (spec.swagger && spec.host) {
     baseUrl = `${spec.schemes?.[0] || "https"}://${spec.host}${spec.basePath || ""}`;
   } else if (spec.openapi && spec.servers?.length) {
-    baseUrl = spec.servers[0].url.replace(/\/$/, ""); // remove trailing slash
+    baseUrl = spec.servers[0].url.replace(/\/$/, ""); 
   }
 
   const url = `${baseUrl}${path}`;
-  console.log("Url:",url);
+  console.log("Url:", url);
 
   setIsLoading(true);
   setResponseData(null);
 
   try {
-    // 2️⃣ Parse request body if applicable
-    const parsedBody = requestBody ? JSON.parse(requestBody) : {};
+    // 2️⃣ Parse request body/parameters
+    // This JSON object now serves two purposes:
+    // - Body for POST/PUT
+    // - Query Parameters for GET/DELETE
+    const parsedInput = requestBody ? JSON.parse(requestBody) : {};
 
-    // 3️⃣ Make API request
-    const res = await axios({
+    // 3️⃣ Configure axios request object
+    const axiosConfig = {
       method,
       url,
-      data: ["post", "put", "patch"].includes(method.toLowerCase())
-        ? parsedBody
+      // 🟢 FIX 1: Use 'data' for methods that require a request body
+      data: ["post", "put", "patch"].includes(lowerMethod)
+        ? parsedInput
         : undefined,
-    });
 
-    // 4️⃣ Save response
+      // 🟢 FIX 2: Use 'params' for methods that use query parameters
+      // This is necessary for GET/DELETE requests
+      params: ["get", "delete"].includes(lowerMethod)
+        ? parsedInput // Pass the parsed JSON object to the params option
+        : undefined,
+    };
+
+    // 4️⃣ Make API request
+    const res = await axios(axiosConfig);
+
+    // 5️⃣ Save response (Your logic here is fine)
     setResponseData({
       status: res.status,
       headers: res.headers,
       data: res.data,
     });
   } catch (err) {
+    // ... (error handling remains the same)
     console.error("Try It Error:", err);
-
     setResponseData({
       status: err.response?.status || "Error",
       data: err.response?.data || err.message || "Request failed",
@@ -183,7 +198,12 @@ function getSchemaByRef(ref, spec) {
             Object.entries(methods).map(([method, details], idx) => (
               <div key={`${i}-${idx}`} className="group">
                 <button
-                  onClick={() => setSelectedEndpoint({ path, method, details })}
+                  type="button"
+                  onClick={(e) => {
+                      // 🟢 NEW: STOP THE DEFAULT REDIRECT/SUBMISSION
+                      if (e) e.preventDefault();
+                      setSelectedEndpoint({ path, method, details });
+                  }}
                   className={`w-full text-left p-4 rounded-xl transition-all duration-300 ease-in-out
                     ${
                       selectedEndpoint?.path === path &&
@@ -256,7 +276,8 @@ function getSchemaByRef(ref, spec) {
             </div>
 
             {/* Parameters */}
-           <tbody className="divide-y divide-white/10">
+           {selectedEndpoint.details.parameters && (
+            <tbody className="divide-y divide-white/10">
   {selectedEndpoint.details.parameters.map((param, idx) => {
     // If body parameter with a schema reference
     if (param.in === "body" && param.schema) {
@@ -307,6 +328,9 @@ function getSchemaByRef(ref, spec) {
     );
   })}
 </tbody>
+           )
+
+           }
 
 
 
@@ -381,7 +405,7 @@ function getSchemaByRef(ref, spec) {
               </div>
 
               {/* Input Body */}
-              {["post", "put", "patch"].includes(selectedEndpoint.method.toLowerCase()) && (
+              {["get", "post", "put", "patch"].includes(selectedEndpoint.method.toLowerCase()) && (
                 <div className="mb-4">
                   <label className="text-white/80 text-sm mb-2 block">
                     Request Body (JSON)
@@ -396,7 +420,7 @@ function getSchemaByRef(ref, spec) {
 
               {/* Send Button */}
               <button
-                onClick={handleTryIt}
+                onClick={(e) => handleTryIt(e)}
                 disabled={isLoading}
                 className="bg-gradient-to-r from-emerald-400 to-blue-400 text-black px-6 py-2 rounded-xl font-semibold shadow-lg hover:scale-[1.03] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >

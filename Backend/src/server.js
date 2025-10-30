@@ -13,6 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 app.use((req, res, next) => {
   if (req.path.startsWith("/embed")) {
     // Allow embedding by any origin (use tighter policy in production)
@@ -25,6 +26,13 @@ app.use((req, res, next) => {
 connectDB();
 
 // Routes
+app.get("/proxy", async (req, res) => {
+  const { url } = req.query;
+  const response = await fetch(url);
+  const data = await response.json();
+  res.json(data);
+});
+
 app.use("/api/specs", specsRoute);
 app.use("/sdks", express.static(path.join(process.cwd(), "sdks")));
 app.use("/api/sdk", sdkRoutes);
