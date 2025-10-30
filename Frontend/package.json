@@ -1,0 +1,41 @@
+{
+  "name": "apiverse",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.13",
+    "axios": "^1.12.0",
+    "framer-motion": "^12.23.12",
+    "lottie-react": "^2.4.1",
+    "lucide-react": "^0.544.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.9.0",
+    "react-syntax-highlighter": "^15.6.6",
+    "redoc": "^2.5.0",
+    "swagger-client": "^3.35.6",
+    "swagger-ui-dist": "^5.29.0",
+    "swagger-ui-react": "^5.29.0",
+    "tailwindcss": "^4.1.13"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "eslint": "^9.13.0",
+    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.13",
+    "globals": "^15.11.0",
+    "vite": "^5.4.9"
+  }
+}

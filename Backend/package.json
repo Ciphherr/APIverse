@@ -1,0 +1,33 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend version of Apiverse",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "nodemon src/server.js"
+  },
+  "keywords": [
+    "apiverse",
+    "api-docs"
+  ],
+  "author": "Chirag Chavan",
+  "license": "MIT",
+  "dependencies": {
+    "@apidevtools/swagger-parser": "^12.0.0",
+    "archiver": "^7.0.1",
+    "bullmq": "^5.58.5",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "ioredis": "^5.7.0",
+    "mongoose": "^8.18.1",
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.10",
+    "swagger-parser": "^10.0.3",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.24.0"
+  }
+}
