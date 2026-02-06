@@ -115,7 +115,10 @@ export default function LandingPage() {
             </span>
           </div>
           
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-6">
+            <Link to="/explore-apis" className="text-white/80 hover:text-emerald-400 font-semibold transition-colors">
+              Explore APIs
+            </Link>
             <Link to="/home" className="bg-emerald-400 hover:bg-emerald-300 text-black font-semibold px-6 py-2.5 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-emerald-400/25">
               Get Started 
             </Link>

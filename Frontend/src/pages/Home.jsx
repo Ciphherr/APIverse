@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import UploadSpec from "../components/UploadSpec";
 import CustomLayout from "../components/CustomLayout";
 import axios from "axios";
@@ -50,6 +51,22 @@ export default function Home() {
 
   return (
     <div className="relative bg-black text-white min-h-screen overflow-hidden">
+      {/* Navigation */}
+      <nav className="relative z-50 backdrop-blur-xl bg-black/20 border-b border-white/10">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-4">
+          <Link to="/" className="flex items-center space-x-3">
+            <span className="text-2xl font-bold">
+              <span className="bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+                Apiverse
+              </span>
+            </span>
+          </Link>
+          <Link to="/explore-apis" className="text-white/80 hover:text-emerald-400 font-semibold transition-colors">
+            Explore APIs
+          </Link>
+        </div>
+      </nav>
+
       {/* Dynamic animated background */}
       <div className="fixed inset-0 z-0">
         <div
@@ -123,7 +140,7 @@ export default function Home() {
     className="w-full bg-gray-800 text-emerald-300 text-sm font-mono rounded-lg p-3 resize-none border border-emerald-700/40"
     rows="3"
     readOnly
-    value={`<iframe src="http://localhost:3000/embed/${apiId}" width="100%" height="800" style="border:none;"></iframe>`}
+    value={`<iframe src="http://localhost:5173/embed/${apiId}" width="100%" height="800" style="border:none;"></iframe>`}
   ></textarea>
 
   <button
@@ -133,11 +150,11 @@ export default function Home() {
       const embedCode = document.getElementById("embedCode").value;
 
       try {
-        // ✅ Use Clipboard API if available
+        //  Use Clipboard API if available
         if (navigator.clipboard && window.isSecureContext) {
           await navigator.clipboard.writeText(embedCode);
         } else {
-          // ✅ Fallback for HTTP/localfile
+          //  Fallback for HTTP/localfile
           const textarea = document.createElement("textarea");
           textarea.value = embedCode;
           document.body.appendChild(textarea);
@@ -146,7 +163,7 @@ export default function Home() {
           textarea.remove();
         }
 
-        // ✅ Show success message non-blocking
+        // Show success message non-blocking
         const toast = document.createElement("div");
         toast.textContent = "✅ Embed code copied!";
         toast.className =

@@ -13,7 +13,7 @@ const methodColors = {
   head: "bg-gradient-to-r from-indigo-400 to-blue-500 text-black",
 };
 
-export default function CustomLayout({ spec , apiId, embedded = false}) {
+export default function CustomLayout({ spec , apiId, apiMeta, embedded = false}) {
 
 
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
@@ -21,6 +21,13 @@ export default function CustomLayout({ spec , apiId, embedded = false}) {
   const [requestBody, setRequestBody] = useState("{}");
   const [responseData, setResponseData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Save modal state
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [providerName, setProviderName] = useState(apiMeta?.providerName || "");
+  const [providerWebsite, setProviderWebsite] = useState(apiMeta?.providerWebsite || "");
+  const [saveDescription, setSaveDescription] = useState(apiMeta?.description || "");
+  const [isSavingMeta, setIsSavingMeta] = useState(false);
 
 
   useEffect(() => {
@@ -34,6 +41,7 @@ export default function CustomLayout({ spec , apiId, embedded = false}) {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+ 
 
  const handleGenerateAndDownload = async () => {
   if (!apiId) {
@@ -63,6 +71,40 @@ export default function CustomLayout({ spec , apiId, embedded = false}) {
   }
 };
 
+const openSaveModal = () => setShowSaveModal(true);
+const closeSaveModal = () => setShowSaveModal(false);
+
+const handleSaveApi = async (e) => {
+  e.preventDefault();
+  if (!apiId) {
+    alert("API ID not found");
+    return;
+  }
+
+  setIsSavingMeta(true);
+  try {
+    const res = await axios.post(`http://localhost:3000/api/specs/${apiId}/save`, {
+      providerName: providerName || undefined,
+      providerWebsite: providerWebsite || undefined,
+      description: saveDescription || undefined,
+    });
+
+    const returned = res.data.api;
+    // Update local state with saved values
+    setProviderName(returned.providerName || "");
+    setProviderWebsite(returned.providerWebsite || "");
+    setSaveDescription(returned.description || "");
+
+    setShowSaveModal(false);
+    alert("API saved successfully!");
+  } catch (err) {
+    console.error("Error saving API:", err);
+    alert("Failed to save API");
+  } finally {
+    setIsSavingMeta(false);
+  }
+};
+
 const handleTryIt = async (event) => {
   if (event) {
     event.preventDefault(); 
@@ -73,7 +115,7 @@ const handleTryIt = async (event) => {
   const lowerMethod = method.toLowerCase(); // Use this for checks
 
   // 1️⃣ Get base URL from spec (Your logic here is mostly fine)
-  let baseUrl = "https://postman-echo.com"; 
+  let baseUrl = "https://localhost:3000"; 
   if (spec.swagger && spec.host) {
     baseUrl = `${spec.schemes?.[0] || "https"}://${spec.host}${spec.basePath || ""}`;
   } else if (spec.openapi && spec.servers?.length) {
@@ -129,6 +171,8 @@ const handleTryIt = async (event) => {
     setIsLoading(false);
   }
 };
+
+ 
 
 function getSchemaByRef(ref, spec) {
   const parts = ref.replace(/^#\//, "").split("/"); // e.g., "#/definitions/Pet" => ["definitions","Pet"]
@@ -241,9 +285,10 @@ function getSchemaByRef(ref, spec) {
         {embedded ? (
           <div className="mb-4 flex items-center justify-between">
             <div className="font-bold text-lg">{spec.info?.title || "API Docs"}</div>
-            <div className="text-sm text-white/60">Embedded view</div>
           </div>
         ) : null}
+
+        
         {selectedEndpoint ? (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* Endpoint Header */}
@@ -265,8 +310,14 @@ function getSchemaByRef(ref, spec) {
               </p>
             </div>
 
-            {/* 🔽 Add Download SDK button here */}
-            <div className="flex justify-end mt-4">
+            {/* 🔽 Download SDK button and Save API button */}
+            <div className="flex justify-end gap-3 mt-4">
+              {!apiMeta?.isSaved && <button
+                onClick={openSaveModal}
+                className="bg-gradient-to-r from-blue-400 to-cyan-400 text-black px-6 py-2 rounded-xl font-semibold shadow-lg hover:scale-[1.03] transition-all"
+              >
+                Save API
+              </button>}
               <button
                 onClick={handleGenerateAndDownload}
                 className="bg-gradient-to-r from-emerald-400 to-blue-400 text-black px-6 py-2 rounded-xl font-semibold shadow-lg hover:scale-[1.03] transition-all"
@@ -449,6 +500,62 @@ function getSchemaByRef(ref, spec) {
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">Select an Endpoint</h3>
               <p className="text-white/60 text-lg">Choose an endpoint from the sidebar to view its documentation</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Save API Modal */}
+        {showSaveModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="bg-black/90 border border-white/10 rounded-2xl p-6 w-full max-w-xl">
+              <h3 className="text-xl font-bold mb-4">Save API - Additional Info</h3>
+              <form onSubmit={handleSaveApi} className="space-y-4">
+                <div>
+                  <label className="text-sm text-white/70 block mb-1">Provider Name</label>
+                  <input 
+                    value={providerName} 
+                    onChange={(e)=>setProviderName(e.target.value)} 
+                    className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white" 
+                    placeholder="e.g. Example Corp" 
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-white/70 block mb-1">Provider Website</label>
+                  <input 
+                    value={providerWebsite} 
+                    onChange={(e)=>setProviderWebsite(e.target.value)} 
+                    className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white" 
+                    placeholder="https://example.com" 
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-white/70 block mb-1">Short Description</label>
+                  <textarea 
+                    value={saveDescription} 
+                    onChange={(e)=>setSaveDescription(e.target.value)} 
+                    rows={4} 
+                    className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-white" 
+                    placeholder="Short description to show in API docs" 
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button 
+                    type="button" 
+                    onClick={closeSaveModal} 
+                    className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={isSavingMeta} 
+                    className="px-4 py-2 rounded-lg bg-emerald-400 text-black font-semibold hover:scale-[1.02] transition-all disabled:opacity-50"
+                  >
+                    {isSavingMeta ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
